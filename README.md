@@ -5,7 +5,7 @@
 | :exclamation: Important Note            |
 |-----------------------------------------|
 
-This is an AI-generated design. Most parts of the documentation are also AI-generated, as seen below.
+This is an AI-generated design. Most parts of the documentation are also AI-generated, as seen below. The prompts leading to the system design, verilog code, and documentation can be seen from: docs/Simple SNN Verilog Implementation.pdf. (https://github.com/nurirfansyah/Simple_digital_SNN_with_LLM/blob/main/docs/Simple%20SNN%20Verilog%20Implementation.pdf)
 
 Here's a brief documentation of the system and its modules:
 
