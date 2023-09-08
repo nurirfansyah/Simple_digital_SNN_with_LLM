@@ -33,17 +33,16 @@ module user_project_wrapper #(
     parameter BITS = 32
 ) (
 `ifdef USE_POWER_PINS
-    inout vdda1,	// User area 1 3.3V supply
-    inout vdda2,	// User area 2 3.3V supply
-    inout vssa1,	// User area 1 analog ground
-    inout vssa2,	// User area 2 analog ground
-    inout vccd1,	// User area 1 1.8V supply
-    inout vccd2,	// User area 2 1.8v supply
-    inout vssd1,	// User area 1 digital ground
-    inout vssd2,	// User area 2 digital ground
+    inout vdda1,    // User area 1 3.3V supply
+    inout vdda2,    // User area 2 3.3V supply
+    inout vssa1,    // User area 1 analog ground
+    inout vssa2,    // User area 2 analog ground
+    inout vccd1,    // User area 1 1.8V supply
+    inout vccd2,    // User area 2 1.8v supply
+    inout vssd1,    // User area 1 digital ground
+    inout vssd2,    // User area 2 digital ground
 `endif
 
-    // Wishbone Slave ports (WB MI A)
     input wb_clk_i,
     input wb_rst_i,
     input wbs_stb_i,
@@ -54,70 +53,74 @@ module user_project_wrapper #(
     input [31:0] wbs_adr_i,
     output wbs_ack_o,
     output [31:0] wbs_dat_o,
-
-    // Logic Analyzer Signals
     input  [127:0] la_data_in,
     output [127:0] la_data_out,
     input  [127:0] la_oenb,
-
-    // IOs
     input  [`MPRJ_IO_PADS-1:0] io_in,
     output [`MPRJ_IO_PADS-1:0] io_out,
     output [`MPRJ_IO_PADS-1:0] io_oeb,
-
-    // Analog (direct connection to GPIO pad---use with caution)
-    // Note that analog I/O is not available on the 7 lowest-numbered
-    // GPIO pads, and so the analog_io indexing is offset from the
-    // GPIO indexing by 7 (also upper 2 GPIOs do not have analog_io).
     inout [`MPRJ_IO_PADS-10:0] analog_io,
-
-    // Independent clock (on independent integer divider)
-    input   user_clock2,
-
-    // User maskable interrupt signals
+    input user_clock2,
     output [2:0] user_irq
 );
 
 /*--------------------------------------*/
-/* User project is instantiated  here   */
+/* SNN instantiation and connections    */
+/*--------------------------------------*/
+
+reg [7:0] input_signal[8:0];
+wire [2:0] output_signal;
+
+always @(*) begin
+    for (int i = 0; i < 9; i = i + 1) begin
+        input_signal[i] = io_in[i];
+    end
+end
+
+SNN snn_inst(
+    .clk(wb_clk_i), // Using the wishbone clock for the SNN
+    .rst_n(wb_rst_i), // Using the wishbone reset
+    .input_signal(input_signal),
+    .output_signal(output_signal)
+);
+
+assign io_out[2:0] = output_signal;
+
+/*--------------------------------------*/
+/* User project is instantiated here    */
 /*--------------------------------------*/
 
 user_proj_example mprj (
 `ifdef USE_POWER_PINS
-	.vccd1(vccd1),	// User area 1 1.8V power
-	.vssd1(vssd1),	// User area 1 digital ground
+    .vdda1(vdda1),
+    .vdda2(vdda2),
+    .vssa1(vssa1),
+    .vssa2(vssa2),
+    .vccd1(vccd1),
+    .vccd2(vccd2),
+    .vssd1(vssd1),
+    .vssd2(vssd2),
 `endif
 
     .wb_clk_i(wb_clk_i),
     .wb_rst_i(wb_rst_i),
-
-    // MGMT SoC Wishbone Slave
-
-    .wbs_cyc_i(wbs_cyc_i),
     .wbs_stb_i(wbs_stb_i),
+    .wbs_cyc_i(wbs_cyc_i),
     .wbs_we_i(wbs_we_i),
     .wbs_sel_i(wbs_sel_i),
     .wbs_adr_i(wbs_adr_i),
     .wbs_dat_i(wbs_dat_i),
     .wbs_ack_o(wbs_ack_o),
     .wbs_dat_o(wbs_dat_o),
-
-    // Logic Analyzer
-
     .la_data_in(la_data_in),
     .la_data_out(la_data_out),
-    .la_oenb (la_oenb),
-
-    // IO Pads
-
-    .io_in ({io_in[37:30],io_in[7:0]}),
-    .io_out({io_out[37:30],io_out[7:0]}),
-    .io_oeb({io_oeb[37:30],io_oeb[7:0]}),
-
-    // IRQ
+    .la_oenb(la_oenb),
+    .io_in({io_in[37:30], io_in[7:0]}),
+    .io_out({io_out[37:30], io_out[7:0]}),
+    .io_oeb({io_oeb[37:30], io_oeb[7:0]}),
     .irq(user_irq)
 );
 
-endmodule	// user_project_wrapper
+endmodule  // user_project_wrapper
 
 `default_nettype wire
