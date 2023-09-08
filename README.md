@@ -13,6 +13,9 @@ Here's a brief documentation of the system and its modules:
 ### System Overview
 The designed system integrates a simple Spiking Neural Network (SNN) into a generic user project wrapper (`user_project_wrapper`). This wrapper is typically used to bridge user-designed modules with a larger system-on-chip (SoC) environment that could include items like CPU cores, memory, and other peripherals.
 
+![mermaid-diagram-2023-09-08-101024](https://github.com/nurirfansyah/Simple_digital_SNN_with_LLM/assets/40015347/cb550d81-d6f6-4644-ad0e-64ec4e6a40f5)
+
+
 #### Modules:
 1. `user_project_wrapper`: The top-level module that integrates the SNN with the SoC environment.
 2. `SNN`: The Spiking Neural Network module that takes in neuron inputs and generates neuron outputs based on the inputs and the internal neural architecture.
